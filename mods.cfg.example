@@ -1,0 +1,5 @@
+[MODRINTH] # This should be the modrinth slug, eg "sodium"
+
+[GITHUB] # This should be the repo and user identifiers, eg "CaffeineMC/sodium-fabric"
+
+[CURSEFORGE] # This should be the curseforge slug, eg "sodium". Only use this if the mod doesn't have a github releases page or modrinth page
