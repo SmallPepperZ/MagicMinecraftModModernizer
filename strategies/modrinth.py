@@ -4,6 +4,10 @@ import requests
 from datetime import datetime
 import wget
 import logging
+import configparser
+
+config = configparser.ConfigParser()
+config.read("settings.cfg")
 
 logging.basicConfig(format="[{name}{levelname}] {message}", style="{")
 master_logger = logging.getLogger("strategies.modrinth")
@@ -32,7 +36,7 @@ def get_mod_versions(slug:str) -> "list[dict]":
 		logger.debug("versions retrieved")
 		return versions
 
-def get_compatable_versions(mod_versions:list, version:str="1.17") -> "list[dict]":
+def get_compatable_versions(mod_versions:list, version:str=config["SETTINGS"]["minecraft_version"]) -> "list[dict]":
 	compatible_versions = []
 	for mod_version in mod_versions:
 		game_versions = mod_version["game_versions"]
