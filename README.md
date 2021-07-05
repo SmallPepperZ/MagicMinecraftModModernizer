@@ -20,11 +20,12 @@ comp500/Indium
 Currently has a mostly-working modrinth strategy, downloading mods from modrinth
 
 ### Github Releases
-Planned, but not added yet™
+In progress
 
 ### Curseforge
 Curseforge has no API to check mod versions with, so without parsing the webpages, there is no way to automatically detect and download new versions. 
 
 ## Todo
 - [ ] Add Github update strategy
+- [ ] Move/remove outdated mod versions in output folder
 - [x] Add a configuration option for Minecraft version
