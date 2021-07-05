@@ -35,17 +35,17 @@ def get_release_jar(release:dict) -> "dict|None":
 		logger.info("jar found")
 		return jars[0]
 	else:
-		for index, jar in enumerate(jars):
-			if jar["name"].endswith("dev.jar") or jar["name"].endswith("sources.jar"):
-				
-				jars.pop(index)
-		if len(jars) == 1:
-			logger.info(f"determined '{jars[0]['name']}' to be the correct jar")
-			return jars[0]
+		final_jars = []
+		for jar in jars:
+			if not (jar["name"].endswith("dev.jar") or jar["name"].endswith("sources.jar")):
+				final_jars.append(jar)
+		if len(final_jars) == 1:
+			logger.info(f"determined '{final_jars[0]['name']}' to be the correct jar")
+			return final_jars[0]
 		else:
 			logger.error("Cannot determine correct jar")
 
-def download_jar(jar_asset:dict, output_dir:str):
+def download_jar(jar_asset:dict, output_dir:str) -> None:
 	url = jar_asset["browser_download_url"]
 	output_file = f"{output_dir}/{jar_asset['name']}"
 	if not os.path.isfile(output_file):
