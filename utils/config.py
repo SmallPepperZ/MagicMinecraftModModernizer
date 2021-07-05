@@ -1,4 +1,5 @@
 import configparser
 
-configuration = configparser.ConfigParser()
-configuration.read("settings.cfg")
+config_obj = configparser.ConfigParser()
+config_obj.read("settings.cfg")
+configuration = config_obj["SETTINGS"]
