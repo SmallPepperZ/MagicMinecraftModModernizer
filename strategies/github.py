@@ -1,6 +1,7 @@
-import requests
+import requests, wget 
 import json
 import logging
+import os
 from utils import configuration as config
 from utils import master_logger
 
@@ -44,8 +45,15 @@ def get_release_jar(release:dict) -> "dict|None":
 		else:
 			logger.error("Cannot determine correct jar")
 
-def download_jar(jar_asset:dict):
-	pass
+def download_jar(jar_asset:dict, output_dir:str):
+	url = jar_asset["browser_download_url"]
+	output_file = f"{output_dir}/{jar_asset['name']}"
+	if not os.path.isfile(output_file):
+		logger.info(f"Downloading to '{output_file}'")
+		wget.download(url, out=output_file)
+		logger.info(f"Downloaded")
+	else:
+		logger.info(f"File at {output_file} already exists")
 
 def download_optimal_version(mod:str, output_path:str=config["output_path"]):
 	global logger
