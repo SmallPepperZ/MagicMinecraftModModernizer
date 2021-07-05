@@ -4,15 +4,14 @@ import requests
 from datetime import datetime
 import wget
 import logging
-import configparser
 
-config = configparser.ConfigParser()
-config.read("settings.cfg")
+from utils import configuration as config
+from utils import master_logger
+modrinth_logger = master_logger.getChild("modrinth")
 
-logging.basicConfig(format="[{name}{levelname}] {message}", style="{")
-master_logger = logging.getLogger("strategies.modrinth")
-
-
+def get_mod_logger(mod:str) -> logging.Logger:
+	return modrinth_logger.getChild(mod)
+	
 if "debug" in [arg.lower() for arg in sys.argv]:
 	master_logger.setLevel(logging.DEBUG)
 else:
@@ -36,7 +35,7 @@ def get_mod_versions(slug:str) -> "list[dict]":
 		logger.debug("versions retrieved")
 		return versions
 
-def get_compatable_versions(mod_versions:list, version:str=config["SETTINGS"]["minecraft_version"]) -> "list[dict]":
+def get_compatable_versions(mod_versions:list, version:str=config["minecraft_version"]) -> "list[dict]":
 	compatible_versions = []
 	for mod_version in mod_versions:
 		game_versions = mod_version["game_versions"]
@@ -88,7 +87,7 @@ def download_version(mod_version:dict, output:str=".") -> None:
 	
 def download_optimal_version(mod:str, output_path:str) -> None:
 	global logger
-	logger = master_logger.getChild(f'{f"{mod}":<15}')
+	logger = get_mod_logger(mod)
 	logger.info("starting search")
 	mod_version = get_newest_compatable_version(mod)
 	if mod_version is not None:
