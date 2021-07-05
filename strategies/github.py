@@ -1,19 +1,27 @@
 import requests
 import json
+import logging
 from utils import configuration as config
+from utils import master_logger
+
 auth_header = {'Authorization': f'token {config["github_token"]}'}
 
+github_logger = master_logger.getChild("github")
+logger = github_logger.getChild("main")
+
+def get_mod_logger(mod:str) -> logging.Logger:
+	return github_logger.getChild(mod)
 
 def print_json(data:"dict|list"):
-	print(json.dumps(data,indent=2))
+	logger.info(json.dumps(data,indent=2))
 
 def get_mod_releases(repo:str) -> "list[dict]|None":
 	response = requests.get(f"https://api.github.com/repos/{repo}/releases", headers=auth_header).json()
 
 	if not isinstance(response, list):
-		print("Not found")
+		logger.error("Not found")
 	elif len(response) < 1:
-		print("No releases")
+		logger.error("No releases")
 	else:
 		return response
 	
@@ -21,23 +29,26 @@ def get_release_jar(release:dict) -> "dict|None":
 	assets = requests.get(release["assets_url"]).json()
 	jars = [asset for asset in assets if asset["name"].endswith(".jar")]
 	if len(jars) == 0:
-		print("No jars found")
+		logger.error("No jars found")
 	elif len(jars) == 1:
+		logger.info("jar found")
 		return jars[0]
 	else:
 		for index, jar in enumerate(jars):
-			print(jar["name"])
-			print(jar["name"].endswith("dev.jar"))
-			print(jar["name"].endswith("sources.jar"))
 			if jar["name"].endswith("dev.jar") or jar["name"].endswith("sources.jar"):
 				
 				jars.pop(index)
 		if len(jars) == 1:
+			logger.info(f"determined '{jars[0]['name']}' to be the correct jar")
 			return jars[0]
 		else:
-			print("Cannot determine correct jar")
+			logger.error("Cannot determine correct jar")
 
 def download_jar(jar_asset:dict):
 	pass
 
+def download_optimal_version(mod:str, output_path:str=config["output_path"]):
+	global logger
+	logger = get_mod_logger(mod)
+	pass
 print(get_release_jar(get_mod_releases("KaptainWutax/SeedCracker")[0]))
