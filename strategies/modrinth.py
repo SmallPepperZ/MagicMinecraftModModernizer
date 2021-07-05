@@ -85,7 +85,7 @@ def download_version(mod_version:dict, output:str=".") -> None:
 	else:
 		logger.info(f"{filename} already exists")
 	
-def download_optimal_version(mod:str, output_path:str) -> None:
+def download_optimal_version(mod:str, output_path:str=config["output_path"]) -> None:
 	global logger
 	logger = get_mod_logger(mod)
 	logger.info("starting search")

@@ -14,9 +14,8 @@ def check_strategy(line:str, index:int) -> "str|None":
 		return strategy_headers[headers[-1]]
 
 def run_strategy(mod:str, strategy:str) -> None:
-	output_dir = config["output_path"]
 	strategies = {
-		"[MODRINTH]": lambda: modrinth.download_optimal_version(mod, output_dir),
+		"[MODRINTH]": lambda: modrinth.download_optimal_version(mod),
 		"[GITHUB]": lambda: print(mod),
 		"[CURSEFORGE]": lambda: print(mod)
 	}
