@@ -1,8 +1,7 @@
 import re
 
 from strategies import modrinth
-
-
+from utils import configuration as config
 
 def check_strategy(line:str, index:int) -> "str|None":
 	if re.fullmatch("\[\S+\]", line): #Check if it is a strategy header
@@ -15,8 +14,9 @@ def check_strategy(line:str, index:int) -> "str|None":
 		return strategy_headers[headers[-1]]
 
 def run_strategy(mod:str, strategy:str) -> None:
+	output_dir = config["output_path"]
 	strategies = {
-		"[MODRINTH]": lambda: modrinth.download_optimal_version(mod, "./mods"),
+		"[MODRINTH]": lambda: modrinth.download_optimal_version(mod, output_dir),
 		"[GITHUB]": lambda: print(mod),
 		"[CURSEFORGE]": lambda: print(mod)
 	}
