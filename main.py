@@ -16,7 +16,7 @@ def check_strategy(line:str, index:int) -> "str|None":
 def run_strategy(mod:str, strategy:str) -> None:
 	strategies = {
 		"[MODRINTH]": lambda: modrinth.download_optimal_version(mod),
-		"[GITHUB]": lambda: modrinth.download_optimal_version(mod, config["minecraft_version"]),
+		"[GITHUB]": lambda: github.download_optimal_version(mod, config["minecraft_version"]),
 		"[CURSEFORGE]": lambda: print(mod)
 	}
 	strategies[strategy]()
