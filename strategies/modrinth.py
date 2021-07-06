@@ -1,4 +1,4 @@
-from typing import Callable, Union
+
 import os, sys
 import requests
 from datetime import datetime
