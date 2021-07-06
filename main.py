@@ -1,6 +1,6 @@
 import re
 
-from strategies import modrinth
+from strategies import modrinth, github
 from utils import configuration as config
 
 def check_strategy(line:str, index:int) -> "str|None":
@@ -16,7 +16,7 @@ def check_strategy(line:str, index:int) -> "str|None":
 def run_strategy(mod:str, strategy:str) -> None:
 	strategies = {
 		"[MODRINTH]": lambda: modrinth.download_optimal_version(mod),
-		"[GITHUB]": lambda: print(mod),
+		"[GITHUB]": lambda: modrinth.download_optimal_version(mod, config["minecraft_version"]),
 		"[CURSEFORGE]": lambda: print(mod)
 	}
 	strategies[strategy]()

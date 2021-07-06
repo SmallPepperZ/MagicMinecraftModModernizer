@@ -19,7 +19,7 @@ def print_json(data:"dict|list"):
 
 def get_mod_releases(repo:str) -> "list[dict]|None":
 	response = requests.get(f"https://api.github.com/repos/{repo}/releases", headers=auth_header).json()
-
+	print(response)
 	if not isinstance(response, list):
 		logger.error("Not found")
 	elif len(response) < 1:
@@ -46,7 +46,7 @@ def get_release_jar(release:dict) -> "dict|None":
 		else:
 			logger.error("Cannot determine correct jar")
 
-def get_compatible_release(mod:str, version:str):
+def get_compatible_release(mod:str, version:str, automatic:bool=False) -> "dict|None":
 	releases = get_mod_releases(mod)
 	if releases is None:
 		print('help')
@@ -58,7 +58,6 @@ def get_compatible_release(mod:str, version:str):
 		"major":[]  # Match major version, eg. 1.17
 	}
 	version_separated = version.split(".")[:-1] + version.split(".")[-1].split("-", 1)
-	print(version_separated)
 	for index, release in enumerate(releases.copy()):
 		# try:
 			mod_properties = requests.get(f"https://raw.githubusercontent.com/{mod}/{release['tag_name']}/gradle.properties").text
@@ -70,20 +69,35 @@ def get_compatible_release(mod:str, version:str):
 			release["mc_version"] = mc_version
 			releases[index]["mc_version"] = mc_version
 			if mc_version == version:
-				print(f'Micro {mc_version} {release["name"]}')
+				print(f'Micro       | {mc_version:8} | {release["name"]}')
 				sorted_versions["micro"].append(release)
 			elif mc_version_separated[:3] == version_separated[:3]:
-				print(f'Minor {mc_version} {release["name"]}')
+				print(f'Minor       | {mc_version:8} | {release["name"]}')
 				sorted_versions["minor"].append(release)
 			elif mc_version_separated[:2] == version_separated[:2]:
-				print(f'Major {mc_version} {release["name"]}')
+				print(f'Major       | {mc_version:8} | {release["name"]}')
 				sorted_versions["major"].append(release)
 			else:
-				print(f'Unknown {mc_version} {release["name"]}')
+				print(f'Extra-Major | {mc_version:8} | {release["name"]}')
 		# except:
 		# 	logger.error("Cannot find version info")
 		# 	return
-	
+	for key in ("micro", "minor", "major"):
+		sorted_versions[key].sort(key=lambda x: x["published_at"], reverse=True)
+	if len(sorted_versions["micro"]) >= 1:
+		print("Perfect match found")
+		return sorted_versions["micro"][0]
+	elif len(sorted_versions["minor"]) >= 1:
+		print("Version match found")
+		return sorted_versions["minor"][0]
+	elif len(sorted_versions["major"]) >= 1:
+		for release in sorted_versions["major"]:
+			if f'{".".join(version_separated[:2])}.x' in release["name"]:
+				print(f'Wildcard version match found ({release["name"]}).')
+				return release
+	else:
+		print("No detected version matches")
+		return 
 
 def download_jar(jar_asset:dict, output_dir:str) -> None:
 	url = jar_asset["browser_download_url"]
@@ -95,14 +109,18 @@ def download_jar(jar_asset:dict, output_dir:str) -> None:
 	else:
 		logger.info(f"File at {output_file} already exists")
 
-def download_optimal_version(mod:str, output_path:str=config["output_path"]):
+def download_optimal_version(mod:str, version:str, output_path:str=config["output_path"] ):
 	global logger
 	logger = get_mod_logger(mod)
-	releases = get_mod_releases(mod)
-	if releases is not None:
-		get_release_jar(releases)
+	compatible_release = get_compatible_release(mod, version)
+	if compatible_release is not None:
+		print("Compatable found")
+		release_jar = get_release_jar(compatible_release)
+	else:
+		return	
+	if release_jar is not None:
+		print("jar found")
+		download_jar(release_jar, output_path)
 	else:
 		logger.error("No releases found")
 
-
-print(get_compatible_release("KaptainWutax/SeedCracker",  "1.16.4"))
