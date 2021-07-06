@@ -2,6 +2,7 @@ import requests, wget
 import json
 import logging
 import os
+import jproperties
 from utils import configuration as config
 from utils import master_logger
 
@@ -14,7 +15,7 @@ def get_mod_logger(mod:str) -> logging.Logger:
 	return github_logger.getChild(mod)
 
 def print_json(data:"dict|list"):
-	logger.info(json.dumps(data,indent=2))
+	print(json.dumps(data,indent=2))
 
 def get_mod_releases(repo:str) -> "list[dict]|None":
 	response = requests.get(f"https://api.github.com/repos/{repo}/releases", headers=auth_header).json()
@@ -45,6 +46,45 @@ def get_release_jar(release:dict) -> "dict|None":
 		else:
 			logger.error("Cannot determine correct jar")
 
+def get_compatible_release(mod:str, version:str):
+	releases = get_mod_releases(mod)
+	if releases is None:
+		print('help')
+		logger.error("Repository has no releases")
+		return
+	sorted_versions = {
+		"micro":[], # Match exact version, eg. 1.17.1-pre1
+		"minor":[], # Match minor version, eg. 1.17.1
+		"major":[]  # Match major version, eg. 1.17
+	}
+	version_separated = version.split(".")[:-1] + version.split(".")[-1].split("-", 1)
+	print(version_separated)
+	for index, release in enumerate(releases.copy()):
+		# try:
+			mod_properties = requests.get(f"https://raw.githubusercontent.com/{mod}/{release['tag_name']}/gradle.properties").text
+			properties = jproperties.Properties()
+			properties.load(mod_properties)
+			mc_version = properties.get("minecraft_version").data
+			mc_version_separated = mc_version.split(".")[:-1] + mc_version.split(".")[-1].split("-", 1)
+			# print(mc_version_separated)
+			release["mc_version"] = mc_version
+			releases[index]["mc_version"] = mc_version
+			if mc_version == version:
+				print(f'Micro {mc_version} {release["name"]}')
+				sorted_versions["micro"].append(release)
+			elif mc_version_separated[:3] == version_separated[:3]:
+				print(f'Minor {mc_version} {release["name"]}')
+				sorted_versions["minor"].append(release)
+			elif mc_version_separated[:2] == version_separated[:2]:
+				print(f'Major {mc_version} {release["name"]}')
+				sorted_versions["major"].append(release)
+			else:
+				print(f'Unknown {mc_version} {release["name"]}')
+		# except:
+		# 	logger.error("Cannot find version info")
+		# 	return
+	
+
 def download_jar(jar_asset:dict, output_dir:str) -> None:
 	url = jar_asset["browser_download_url"]
 	output_file = f"{output_dir}/{jar_asset['name']}"
@@ -58,5 +98,11 @@ def download_jar(jar_asset:dict, output_dir:str) -> None:
 def download_optimal_version(mod:str, output_path:str=config["output_path"]):
 	global logger
 	logger = get_mod_logger(mod)
-	pass
-print(get_release_jar(get_mod_releases("KaptainWutax/SeedCracker")[0]))
+	releases = get_mod_releases(mod)
+	if releases is not None:
+		get_release_jar(releases)
+	else:
+		logger.error("No releases found")
+
+
+print(get_compatible_release("KaptainWutax/SeedCracker",  "1.16.4"))
