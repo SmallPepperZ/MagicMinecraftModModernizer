@@ -19,7 +19,6 @@ def print_json(data:"dict|list"):
 
 def get_mod_releases(repo:str) -> "list[dict]|None":
 	response = requests.get(f"https://api.github.com/repos/{repo}/releases", headers=auth_header).json()
-	print(response)
 	if not isinstance(response, list):
 		logger.error("Not found")
 	elif len(response) < 1:
@@ -38,7 +37,7 @@ def get_release_jar(release:dict) -> "dict|None":
 	else:
 		final_jars = []
 		for jar in jars:
-			if not (jar["name"].endswith("dev.jar") or jar["name"].endswith("sources.jar")):
+			if not (jar["name"].endswith("dev.jar") or jar["name"].endswith("sources.jar") or jar["name"].endswith("-api.jar")):
 				final_jars.append(jar)
 		if len(final_jars) == 1:
 			logger.info(f"determined '{final_jars[0]['name']}' to be the correct jar")
@@ -49,7 +48,6 @@ def get_release_jar(release:dict) -> "dict|None":
 def get_compatible_release(mod:str, version:str, automatic:bool=False) -> "dict|None":
 	releases = get_mod_releases(mod)
 	if releases is None:
-		print('help')
 		logger.error("Repository has no releases")
 		return
 	sorted_versions = {
@@ -65,38 +63,37 @@ def get_compatible_release(mod:str, version:str, automatic:bool=False) -> "dict|
 			properties.load(mod_properties)
 			mc_version = properties.get("minecraft_version").data
 			mc_version_separated = mc_version.split(".")[:-1] + mc_version.split(".")[-1].split("-", 1)
-			# print(mc_version_separated)
 			release["mc_version"] = mc_version
 			releases[index]["mc_version"] = mc_version
 			if mc_version == version:
-				print(f'Micro       | {mc_version:8} | {release["name"]}')
+				logger.info(f'Micro       | {mc_version:8} | {release["name"]}')
 				sorted_versions["micro"].append(release)
 			elif mc_version_separated[:3] == version_separated[:3]:
-				print(f'Minor       | {mc_version:8} | {release["name"]}')
+				logger.debug(f'Minor       | {mc_version:8} | {release["name"]}')
 				sorted_versions["minor"].append(release)
 			elif mc_version_separated[:2] == version_separated[:2]:
-				print(f'Major       | {mc_version:8} | {release["name"]}')
+				logger.debug(f'Major       | {mc_version:8} | {release["name"]}')
 				sorted_versions["major"].append(release)
 			else:
-				print(f'Extra-Major | {mc_version:8} | {release["name"]}')
+				logger.debug(f'Extra-Major | {mc_version:8} | {release["name"]}')
 		# except:
 		# 	logger.error("Cannot find version info")
 		# 	return
 	for key in ("micro", "minor", "major"):
 		sorted_versions[key].sort(key=lambda x: x["published_at"], reverse=True)
 	if len(sorted_versions["micro"]) >= 1:
-		print("Perfect match found")
+		logger.info("Perfect release match found")
 		return sorted_versions["micro"][0]
 	elif len(sorted_versions["minor"]) >= 1:
-		print("Version match found")
+		logger.info("Release version match found")
 		return sorted_versions["minor"][0]
 	elif len(sorted_versions["major"]) >= 1:
 		for release in sorted_versions["major"]:
 			if f'{".".join(version_separated[:2])}.x' in release["name"]:
-				print(f'Wildcard version match found ({release["name"]}).')
+				logger.info(f'Wildcard release version match found ({release["name"]}).')
 				return release
 	else:
-		print("No detected version matches")
+		logger.warning("No detected version matches")
 		return 
 
 def download_jar(jar_asset:dict, output_dir:str) -> None:
@@ -114,12 +111,12 @@ def download_optimal_version(mod:str, version:str, output_path:str=config["outpu
 	logger = get_mod_logger(mod)
 	compatible_release = get_compatible_release(mod, version)
 	if compatible_release is not None:
-		print("Compatable found")
+		logger.info("Compatable release found")
 		release_jar = get_release_jar(compatible_release)
 	else:
 		return	
 	if release_jar is not None:
-		print("jar found")
+		logger.info("Compatable Jar found")
 		download_jar(release_jar, output_path)
 	else:
 		logger.error("No releases found")
