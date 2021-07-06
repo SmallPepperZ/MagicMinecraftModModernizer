@@ -29,3 +29,6 @@ Curseforge has no API to check mod versions with, so without parsing the webpage
 - [ ] Add Github update strategy
 - [ ] Move/remove outdated mod versions in output folder
 - [x] Add a configuration option for Minecraft version
+
+## Credits
+Name by @NarwhalCat27
