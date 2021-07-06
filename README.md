@@ -31,4 +31,4 @@ Curseforge has no API to check mod versions with, so without parsing the webpage
 - [x] Add a configuration option for Minecraft version
 
 ## Credits
-Name by @NarwhalCat27
+Name by [@NarwhalCat27](https://github.com/NarwhalCat27)
