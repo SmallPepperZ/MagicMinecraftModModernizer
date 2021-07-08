@@ -1,2 +1,2 @@
 from .config import configuration
-from .logging import master_logger
+from .logging_manager import master_logger

@@ -111,12 +111,12 @@ def download_optimal_version(mod:str, version:str, output_path:str=config["outpu
 	logger = get_mod_logger(mod)
 	compatible_release = get_compatible_release(mod, version)
 	if compatible_release is not None:
-		logger.info("Compatable release found")
+		logger.info("compatible release found")
 		release_jar = get_release_jar(compatible_release)
 	else:
 		return	
 	if release_jar is not None:
-		logger.info("Compatable Jar found")
+		logger.info("compatible Jar found")
 		download_jar(release_jar, output_path)
 	else:
 		logger.error("No releases found")

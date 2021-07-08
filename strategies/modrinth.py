@@ -35,7 +35,7 @@ def get_mod_versions(slug:str) -> "list[dict]":
 		logger.debug("versions retrieved")
 		return versions
 
-def get_compatable_versions(mod_versions:list, version:str=config["minecraft_version"]) -> "list[dict]":
+def get_compatible_versions(mod_versions:list, version:str=config["minecraft_version"]) -> "list[dict]":
 	compatible_versions = []
 	for mod_version in mod_versions:
 		game_versions = mod_version["game_versions"]
@@ -53,16 +53,16 @@ def get_newest_version(mod_versions:list=None) -> dict:
 		if version["update_time"] == max([v["update_time"] for v in mod_versions]):
 			return version
 
-def get_newest_compatable_version(mod) -> "dict|None":
+def get_newest_compatible_version(mod) -> "dict|None":
 	try:
 		mod_versions = get_mod_versions(mod)
 	except:
 		return
-	return get_newest_version(get_compatable_versions(mod_versions))
+	return get_newest_version(get_compatible_versions(mod_versions))
 
 def download_version(mod_version:dict, output:str=".") -> None:
 	if mod_version is None:
-		logger.warning("No compatable version found")
+		logger.warning("No compatible version found")
 		return
 	url = mod_version['files'][0]['url']
 	filename = f"{output}/{mod_version['files'][0]['filename']}"
@@ -89,8 +89,8 @@ def download_optimal_version(mod:str, output_path:str=config["output_path"]) -> 
 	global logger
 	logger = get_mod_logger(mod)
 	logger.info("starting search")
-	mod_version = get_newest_compatable_version(mod)
+	mod_version = get_newest_compatible_version(mod)
 	if mod_version is not None:
 		download_version(mod_version, output_path)
 	else:
-		logger.warning("No compatable version found")
+		logger.warning("No compatible version found")
