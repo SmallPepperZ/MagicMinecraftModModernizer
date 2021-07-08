@@ -2,6 +2,7 @@
 This is a WIP, wonderfully named script to automatically download latest versions of a Minecraft mod compatible with a given Minecraft version
 ## Running
 To set up the config file, you can run the `setup.sh` file, or rename `mods.cfg.example` to `mods.cfg` and rename `settings.cfg.example` to `settings.cfg`. Put each mod on a new line in the format detailed in the header line. Comments with a `#` will be ignored.
+
 **Example Configuration**
 ```ini
 [MODRINTH]
